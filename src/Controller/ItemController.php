@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Item;
 use App\Service\ItemService;
+use Riverline\MultiPartParser\Converters\HttpFoundation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,6 +49,36 @@ class ItemController extends AbstractController
         }
 
         $itemService->create($this->getUser(), $data);
+
+        return $this->json([]);
+    }
+
+    /**
+     * @Route("/item", name="item_update", methods={"PUT"})
+     * @IsGranted("ROLE_USER")
+     */
+    public function update(Request $request, ItemService $itemService)
+    {
+        $input = [];
+        foreach(HttpFoundation::convert($request)->getParts() as $part) {
+            $input[$part->getName()] = $part->getBody();
+        }
+
+        if (empty($input['id'])) {
+            return $this->json(['error' => 'No id parameter']);
+        }
+
+        if (empty($input['data'])) {
+            return $this->json(['error' => 'No data parameter']);
+        }
+
+        $item = $this->getDoctrine()->getRepository(Item::class)->find($input['id']);
+
+        if ($item === null) {
+            return $this->json(['error' => 'No item'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $itemService->update($item, $input['data']);
 
         return $this->json([]);
     }
