@@ -37,3 +37,9 @@ services:
         arguments:
             - '%env(ENCRYPTION_KEY)%'
             - '%env(ENCRYPTION_SUFFIX)%'
+
+    Symfony\Component\Cache\Marshaller\SodiumMarshaller:
+        decorates: cache.default_marshaller
+        arguments:
+            - [ '%env(base64:CACHE_DECRYPTION_KEY)%' ]
+            - '@Symfony\Component\Cache\Marshaller\SodiumMarshaller.inner'
