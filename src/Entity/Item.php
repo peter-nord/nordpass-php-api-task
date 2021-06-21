@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use App\Contract\EncryptedEntity;
+use App\Contract\Encryptor;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,9 +11,10 @@ use App\Repository\ItemRepository;
 
 /**
  * @ORM\Entity(repositoryClass=ItemRepository::class)
+ * @ORM\EntityListeners({"App\Listener\ItemListener"})
  * @ORM\HasLifecycleCallbacks
  */
-class Item
+class Item implements EncryptedEntity
 {
     /**
      * @ORM\Id()
@@ -24,6 +27,8 @@ class Item
      * @ORM\Column(type="text")
      */
     private $data;
+
+    private $decryptedData;
 
     /**
      * @ORM\Column(type="datetime")
@@ -48,12 +53,13 @@ class Item
 
     public function getData(): ?string
     {
-        return $this->data;
+        return $this->decryptedData;
     }
 
     public function setData(string $data): self
     {
-        $this->data = $data;
+        $this->decryptedData = $data;
+        $this->data = null;
 
         return $this;
     }
@@ -118,5 +124,19 @@ class Item
         $this->user = $user;
 
         return $this;
+    }
+
+    public function encrypt(Encryptor $encryptor): void
+    {
+        if ($this->decryptedData) {
+            $this->data = $encryptor->encrypt($this->decryptedData);
+        }
+    }
+
+    public function decrypt(Encryptor $encryptor): void
+    {
+        if ($this->data) {
+            $this->decryptedData = $encryptor->decrypt($this->data);
+        }
     }
 }
