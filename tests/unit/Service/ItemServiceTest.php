@@ -43,4 +43,18 @@ class ItemServiceTest extends TestCase
 
         $this->itemService->create($user, $data);
     }
+
+    public function testUpdate(): void
+    {
+        /** @var User */
+        $user = $this->createMock(User::class);
+        /** @var Item */
+        $item = $this->createMock(Item::class);
+        $data = 'secret data';
+
+        $item->expects($this->once())->method('setData')->with('secret data');
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $this->itemService->update($item, $data);
+    }
 }
