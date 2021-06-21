@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
+use App\Repository\UserRepository;
+use Gedmo\Mapping\Annotation as Gedmo;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
@@ -35,11 +36,13 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="datetime")
+     * @Gedmo\Timestampable(on="create")
      */
     private $createdAt;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Gedmo\Timestampable(on="update")
      */
     private $updatedAt;
 
@@ -92,32 +95,6 @@ class User implements UserInterface
         $this->updatedAt = $updatedAt;
 
         return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function updateTimestampsOnPersist(): void
-    {
-        if (null === $this->getUpdatedAt()) {
-            $this->setUpdatedAt(new DateTime('now'));
-        }
-
-        if (null === $this->getCreatedAt()) {
-            $this->setCreatedAt(new DateTime('now'));
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function updatedTimestampsOnUpdate(): void
-    {
-        $this->setUpdatedAt(new DateTime('now'));
-
-        if (null === $this->getCreatedAt()) {
-            $this->setCreatedAt(new DateTime('now'));
-        }
     }
 
     public function setPassword(string $password): self

@@ -17,7 +17,8 @@
         "symfony/security-core": "5.1.*",
         "symfony/security-guard": "5.1.*",
         "symfony/security-http": "5.1.*",
-        "symfony/yaml": "5.1.*"
+        "symfony/yaml": "5.1.*",
+        "gedmo/doctrine-extensions": "^2.4"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.3",

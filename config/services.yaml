@@ -43,3 +43,10 @@ services:
         arguments:
             - [ '%env(base64:CACHE_DECRYPTION_KEY)%' ]
             - '@Symfony\Component\Cache\Marshaller\SodiumMarshaller.inner'
+
+    gedmo.listener.timestampable:
+        class: Gedmo\Timestampable\TimestampableListener
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+        calls:
+            - [ setAnnotationReader, [ "@annotation_reader" ] ]
