@@ -20,3 +20,14 @@ make tests
 ### Postman requests collection
 
 You can import all available API calls to Postman using `postman_collection.json` file
+
+### API endpoints
+
+#### PUT /item
+
+Parameters should be sent in multipart/form-data format:
+
+* id (int) - ID of item to update
+* data (string) - new data string
+
+Possible response codes: 401 (Not Authorized), 200 (OK or Validation error)
