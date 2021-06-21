@@ -13,25 +13,37 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class ItemController extends AbstractController
 {
+    private $cache;
+
+    public function __construct(CacheInterface $cache)
+    {
+        $this->cache = $cache;
+    }
+
     /**
      * @Route("/item", name="item_list", methods={"GET"})
      * @IsGranted("ROLE_USER")
      */
     public function list(): JsonResponse
     {
-        $items = $this->getDoctrine()->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
+        $allItems = $this->cache->get('items_' . $this->getUser()->getId(), function () {
+            $items = $this->getDoctrine()->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
 
-        $allItems = [];
-        foreach ($items as $item) {
-            $oneItem['id'] = $item->getId();
-            $oneItem['data'] = $item->getData();
-            $oneItem['created_at'] = $item->getCreatedAt();
-            $oneItem['updated_at'] = $item->getUpdatedAt();
-            $allItems[] = $oneItem;
-        }
+            $allItems = [];
+            foreach ($items as $item) {
+                $oneItem['id'] = $item->getId();
+                $oneItem['data'] = $item->getData();
+                $oneItem['created_at'] = $item->getCreatedAt();
+                $oneItem['updated_at'] = $item->getUpdatedAt();
+                $allItems[] = $oneItem;
+            }
+
+            return $allItems;
+        });
 
         return $this->json($allItems);
     }
@@ -49,6 +61,8 @@ class ItemController extends AbstractController
         }
 
         $itemService->create($this->getUser(), $data);
+
+        $this->cache->delete('items_' . $this->getUser()->getId());
 
         return $this->json([]);
     }
@@ -80,6 +94,8 @@ class ItemController extends AbstractController
 
         $itemService->update($item, $input['data']);
 
+        $this->cache->delete('items_' . $this->getUser()->getId());
+
         return $this->json([]);
     }
 
@@ -102,6 +118,8 @@ class ItemController extends AbstractController
         $manager = $this->getDoctrine()->getManager();
         $manager->remove($item);
         $manager->flush();
+
+        $this->cache->delete('items_' . $this->getUser()->getId());
 
         return $this->json([]);
     }
